@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from rest_framework.generics import get_object_or_404
 from rest_framework import serializers
 from .models import MyUser
 from django.contrib.auth import authenticate
@@ -65,19 +65,19 @@ class CreateNewPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=6, required=True)
     password_confirmation = serializers.CharField(min_length=6, required=True)
 
-    def validate_email(self, email):
-        if not MyUser.objects.filter(email=email).exists():
-            raise serializers.ValidationError('Пользователя с таким email не существует')
-        return email
-
     def validate_activation_code(self, code):
         if not MyUser.objects.filter(activation_code=code, is_active=False).exists():
             raise serializers.ValidationError('Неверный код активации')
         return code
 
+    def validate_email(self, email):
+        if not MyUser.objects.filter(email=email).exists():
+            raise serializers.ValidationError('Пользователя с таким email не существует')
+        return email
+
     def validate(self, attrs):
-        email = attrs.get('email')
-        user = get_object_or_404(MyUser, email=email)
+        # email = attrs.get('email')
+        # user = get_object_or_404(MyUser, email=email)
         password = attrs.get('password')
         password_confirmation = attrs.get('password_confirmation')
         if password != password_confirmation:
@@ -95,10 +95,46 @@ class CreateNewPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError('Пользователь не найден')
         user.is_active = True
         user.activation_code = ''
-        user.send_password(password)
+        user.set_password(password)
         user.save()
         return user
 
-
+# class CreateNewPasswordSerialzier(serializers.Serializer):
+#     email = serializers.EmailField()
+#     activation_code = serializers.CharField(max_length=20)
+#     password = serializers.CharField(min_length=6, required=True)
+#     password_confirm = serializers.CharField(min_length=6, required=True)
+#
+#     def validate_activation_code(self, code):
+#         if not MyUser.objects.filter(activation_code=code, is_active=False).exists():
+#             raise serializers.ValidationError('Неверный код активации')
+#         return code
+#
+#     def validate_email(self, email):
+#         if not MyUser.objects.filter(email=email).exists():
+#             raise serializers.ValidationError('Пользователя с таким email не найден')
+#         return email
+#
+#     def validate(self, attrs):
+#         password = attrs.get('password')
+#         password_confirm = attrs.get('password_confirm')
+#         if password != password_confirm:
+#             raise serializers.ValidationError('Пароли не совпадают')
+#         return attrs
+#
+#     def save(self, **kwargs):
+#         data = self.validated_data
+#         email = data.get('email')
+#         code = data.get('activation_code')
+#         password = data.get('password')
+#         try:
+#             user = MyUser.objects.get(email=email, activation_code=code, is_active=False)
+#         except:
+#             raise serializers.ValidationError('User not found')
+#         user.is_active = True
+#         user.activation_code = ''
+#         user.set_password(password)
+#         user.save()
+#         return user
 
 

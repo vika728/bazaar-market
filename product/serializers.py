@@ -88,11 +88,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
         model = Favorite
         fields = '__all__'
 
-    # def create(self, validated_data):
-    #     request = self.context.get('request')
-    #     user = request.user
-    #     favourite = Favorite.objects.create(user=user, **validated_data)
-    #     return favourite
+    def create(self, validated_data):
+        request = self.context.get('request')
+        user = request.user
+        favourite = Favorite.objects.create(user=user, **validated_data)
+        return favourite
 
     def to_representation(self, instance):
         representation = super(FavoriteSerializer, self).to_representation(instance)

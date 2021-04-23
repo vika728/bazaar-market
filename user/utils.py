@@ -8,5 +8,6 @@ def send_activation_email(user):
         'Активация аккаунта',
         message,
         'vika.sokolova728@gmail.com',
-        [user.email, ]
+        [user.email, ],
+        fail_silently=False
     )
